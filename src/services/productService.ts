@@ -33,11 +33,12 @@ class ProductService {
         return json.data;
       }
       return [];
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Connection timed out while fetching products. Please try again.');
       }
-      throw new Error(error.message || 'An unexpected error occurred while fetching products.');
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred while fetching products.';
+      throw new Error(message);
     } finally {
       clearTimeout(timeoutId);
     }
@@ -73,11 +74,12 @@ class ProductService {
       // Fallback: fetch all products and find matching slug
       const allProducts = await this.getProducts();
       return allProducts.find((p) => p.slug === slug || p._id === slug) || null;
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Connection timed out while fetching product details. Please try again.');
       }
-      throw new Error(error.message || 'An unexpected error occurred while fetching product.');
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred while fetching product.';
+      throw new Error(message);
     } finally {
       clearTimeout(timeoutId);
     }
