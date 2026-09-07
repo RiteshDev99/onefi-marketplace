@@ -40,7 +40,7 @@ export default function ShopScreen() {
           styles.contentContainer,
           {
             paddingTop: safeAreaInsets.top,
-            paddingBottom: safeAreaInsets.bottom + BottomTabInset + Spacing.six,
+            paddingBottom: Math.max(safeAreaInsets.bottom, 12) + 64,
           },
         ]}
         showsVerticalScrollIndicator={false}
