@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, ScrollView, View, Pressable, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SymbolView } from 'expo-symbols';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -11,9 +12,9 @@ import { ProductPricing } from '@/components/marketplace/ProductPricing';
 import { VariantSelector } from '@/components/marketplace/VariantSelector';
 import { EmiPlanSelector } from '@/components/marketplace/EmiPlanSelector';
 import { SelectedEmiSummary } from '@/components/marketplace/SelectedEmiSummary';
-import { PlanConfirmationModal } from '@/components/marketplace/PlanConfirmationModal';
+import { ProductDetailsSection } from '@/components/marketplace/ProductDetailsSection';
 import { ProductDescription } from '@/components/marketplace/ProductDescription';
-import { ProductAssurances } from '@/components/marketplace/ProductAssurances';
+import { PlanConfirmationModal } from '@/components/marketplace/PlanConfirmationModal';
 import { ProductDetailSkeleton } from '@/components/marketplace/ProductDetailSkeleton';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -36,6 +37,7 @@ export default function ProductDetailScreen() {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
   const [selectedEmiPlan, setSelectedEmiPlan] = useState<EMIPlan | undefined>(undefined);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +54,9 @@ export default function ProductDetailScreen() {
         setSelectedVariant(initialVariant);
         setSelectedEmiPlan(getDefaultEmiPlan(initialVariant?.emiPlans));
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load product details');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load product details';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -79,20 +82,24 @@ export default function ProductDetailScreen() {
 
   return (
     <ThemedView style={[styles.outerContainer, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={theme.text === '#F8FAFC' ? 'light-content' : 'dark-content'} />
+      <StatusBar barStyle="dark-content" backgroundColor={theme.card} />
 
       {/* Safe Area Top Spacer */}
       <View style={{ height: insets.top, backgroundColor: theme.card }} />
 
       {/* Top Navigation Header */}
-      <ProductDetailHeader title={product?.name} brand={product?.brand} />
+      <ProductDetailHeader
+        brand={product?.brand}
+        title={product?.name}
+        productName={product?.name}
+      />
 
       {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingBottom: insets.bottom + 90 },
+          { paddingBottom: insets.bottom + 100 },
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.responsiveWrapper}>
@@ -166,14 +173,7 @@ export default function ProductDetailScreen() {
             </View>
           ) : (
             <View>
-              {/* Product Media Viewport */}
-              <ProductDetailImage
-                imageUrl={activeVariant?.image}
-                discountPercentage={discount}
-                inStock={activeVariant?.inStock}
-              />
-
-              {/* Product Pricing & Starting EMI Preview */}
+              {/* Product Pricing & Title Block */}
               <ProductPricing
                 brand={product.brand}
                 name={product.name}
@@ -185,6 +185,13 @@ export default function ProductDetailScreen() {
                 variantCount={product.variants?.length}
               />
 
+              {/* Product Media Viewport */}
+              <ProductDetailImage
+                imageUrl={activeVariant?.image}
+                discountPercentage={discount}
+                inStock={activeVariant?.inStock}
+              />
+
               {/* Variant Selector */}
               {product.variants && product.variants.length > 0 && (
                 <VariantSelector
@@ -194,7 +201,7 @@ export default function ProductDetailScreen() {
                 />
               )}
 
-              {/* Dynamic EMI Plan Selector for the Selected Variant */}
+              {/* Dynamic EMI Plan Selector matching Reference Structure */}
               <EmiPlanSelector
                 emiPlans={activeVariant?.emiPlans}
                 selectedPlan={selectedEmiPlan}
@@ -208,17 +215,17 @@ export default function ProductDetailScreen() {
                 selectedPlan={selectedEmiPlan}
               />
 
+              {/* Structured Product Specifications */}
+              <ProductDetailsSection product={product} variant={activeVariant} />
+
               {/* Product Description */}
               <ProductDescription description={product.description} />
-
-              {/* 1Fi Trust & Store Highlights */}
-              <ProductAssurances />
             </View>
           )}
         </View>
       </ScrollView>
 
-      {/* Sticky Bottom Proceed CTA Bar */}
+      {/* Sticky Bottom CTA Bar */}
       {product && !loading && !error && (
         <View
           style={[
@@ -230,38 +237,29 @@ export default function ProductDetailScreen() {
             },
           ]}>
           <View style={styles.stickyContent}>
-            {/* Quick Price/Tenure Preview */}
-            <View style={styles.ctaPricePreview}>
-              {selectedEmiPlan ? (
-                <>
-                  <ThemedText style={[styles.ctaMonthly, { color: theme.brandPurple }]}>
-                    {formatCurrency(selectedEmiPlan.monthlyPayment)}
-                    <ThemedText style={styles.ctaPerMo}>/mo</ThemedText>
-                  </ThemedText>
-                  <ThemedText style={styles.ctaTenure} themeColor="textSecondary">
-                    {selectedEmiPlan.tenure}M Plan • {selectedEmiPlan.interestRate === 0 ? '0% Int' : `${selectedEmiPlan.interestRate}%`}
-                  </ThemedText>
-                </>
-              ) : (
-                <>
-                  <ThemedText style={styles.ctaMonthly}>
-                    {activeVariant ? formatCurrency(activeVariant.price) : '—'}
-                  </ThemedText>
-                  <ThemedText style={styles.ctaTenure} themeColor="textSecondary">
-                    One-time payment
-                  </ThemedText>
-                </>
-              )}
-            </View>
+            {/* Wishlist / Heart Icon Button */}
+            <Pressable
+              onPress={() => setIsWishlisted(!isWishlisted)}
+              accessibilityRole="button"
+              accessibilityLabel="Wishlist item"
+              style={({ pressed }) => [
+                styles.wishlistButton,
+                { borderColor: theme.border, backgroundColor: theme.card },
+                pressed && styles.pressed,
+              ]}>
+              <ThemedText style={styles.wishlistIcon}>
+                {isWishlisted ? '❤️' : '🤍'}
+              </ThemedText>
+            </Pressable>
 
-            {/* Proceed CTA Button */}
+            {/* Primary Proceed / Buy CTA Button */}
             <Pressable
               disabled={!isAvailable}
               onPress={() => setIsConfirmModalVisible(true)}
               accessibilityRole="button"
               accessibilityLabel={
                 selectedEmiPlan
-                  ? `Proceed with ${selectedEmiPlan.tenure} month EMI plan at ${formatCurrency(selectedEmiPlan.monthlyPayment)} per month`
+                  ? `Buy on ${selectedEmiPlan.tenure} months EMI at ${formatCurrency(selectedEmiPlan.monthlyPayment)} per month`
                   : 'Proceed with this plan'
               }
               accessibilityState={{ disabled: !isAvailable }}
@@ -271,8 +269,15 @@ export default function ProductDetailScreen() {
                 pressed && isAvailable && styles.pressed,
               ]}>
               <ThemedText style={styles.proceedButtonText}>
-                {selectedEmiPlan ? 'Proceed with this plan →' : 'Select Plan to Proceed'}
+                {selectedEmiPlan
+                  ? `Buy on ${selectedEmiPlan.tenure} mons EMI`
+                  : 'Select Plan to Proceed'}
               </ThemedText>
+              {selectedEmiPlan && typeof selectedEmiPlan.cashback === 'number' && selectedEmiPlan.cashback > 0 ? (
+                <ThemedText style={styles.cashbackButtonSubtext}>
+                  Earn {formatCurrency(selectedEmiPlan.cashback)} cashback on this order
+                </ThemedText>
+              ) : null}
             </Pressable>
           </View>
         </View>
@@ -385,8 +390,8 @@ const styles = StyleSheet.create({
   },
   bottomStickyBar: {
     borderTopWidth: 1,
-    paddingTop: Spacing.three,
-    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two + 2,
+    paddingHorizontal: Spacing.three,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -3 },
@@ -399,31 +404,24 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.three,
+    gap: 12,
   },
-  ctaPricePreview: {
-    flex: 1,
-    gap: 1,
+  wishlistButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  ctaMonthly: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#111827',
-  },
-  ctaPerMo: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  ctaTenure: {
-    fontSize: 11,
-    fontWeight: '500',
+  wishlistIcon: {
+    fontSize: 20,
   },
   proceedButton: {
-    flex: 1.4,
-    paddingVertical: 14,
+    flex: 1,
+    paddingVertical: 12,
     paddingHorizontal: Spacing.three,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#6226E3',
@@ -431,12 +429,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 4,
+    gap: 1,
   },
   proceedButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  cashbackButtonSubtext: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 11,
+    fontWeight: '600',
     textAlign: 'center',
   },
 });
+
 
