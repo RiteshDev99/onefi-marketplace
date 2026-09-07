@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
-import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -10,53 +9,107 @@ export function ProductDetailSkeleton() {
 
   return (
     <View style={styles.container}>
-      {/* Loading Indicator */}
-      <View style={styles.indicatorRow}>
-        <ActivityIndicator size="small" color={theme.brandPurple} />
-        <ThemedText style={[styles.loadingText, { color: theme.brandPurple }]}>
-          Loading device specifications & EMI options...
-        </ThemedText>
-      </View>
-
-      {/* Skeleton Media Card */}
+      {/* 1. Skeleton Pricing & Title Card */}
       <View
         style={[
-          styles.skeletonImageCard,
+          styles.skeletonCard,
           {
             backgroundColor: theme.card,
             borderColor: theme.border,
           },
         ]}>
-        <View style={[styles.imagePlaceholder, { backgroundColor: theme.backgroundElement }]} />
+        <View style={styles.badgePlaceholder} />
+        <View style={styles.priceRowPlaceholder}>
+          <View style={styles.pricePlaceholder} />
+          <View style={styles.mrpPlaceholder} />
+          <View style={styles.discountPlaceholder} />
+        </View>
+        <View style={styles.titlePlaceholder} />
       </View>
 
-      {/* Skeleton Pricing & Details Card */}
+      {/* 2. Skeleton Media Viewport */}
       <View
         style={[
-          styles.skeletonDetailsCard,
+          styles.skeletonCard,
           {
             backgroundColor: theme.card,
             borderColor: theme.border,
           },
         ]}>
-        <View style={[styles.skeletonPill, { backgroundColor: theme.backgroundElement }]} />
-        <View style={[styles.skeletonTitle, { backgroundColor: theme.backgroundElement }]} />
-        <View style={[styles.skeletonPrice, { backgroundColor: theme.backgroundElement }]} />
-        <View style={[styles.skeletonBanner, { backgroundColor: theme.backgroundElement }]} />
+        <View style={styles.imagePlaceholder} />
+        <View style={styles.dotsPlaceholder}>
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </View>
       </View>
 
-      {/* Skeleton Description Card */}
+      {/* 3. Skeleton Variant Selector Card */}
       <View
         style={[
-          styles.skeletonDescCard,
+          styles.skeletonCard,
           {
             backgroundColor: theme.card,
             borderColor: theme.border,
           },
         ]}>
-        <View style={[styles.skeletonDescLine1, { backgroundColor: theme.backgroundElement }]} />
-        <View style={[styles.skeletonDescLine2, { backgroundColor: theme.backgroundElement }]} />
-        <View style={[styles.skeletonDescLine3, { backgroundColor: theme.backgroundElement }]} />
+        <View style={styles.sectionHeaderPlaceholder} />
+        <View style={styles.variantItemPlaceholder} />
+        <View style={styles.variantItemPlaceholder} />
+      </View>
+
+      {/* 4. Skeleton EMI Plan Selector Card */}
+      <View
+        style={[
+          styles.skeletonCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}>
+        <View style={styles.sectionHeaderPlaceholder} />
+        <View style={styles.emiRowPlaceholder} />
+        <View style={styles.emiRowPlaceholder} />
+        <View style={styles.emiRowPlaceholder} />
+      </View>
+
+      {/* 5. Skeleton Specifications Card */}
+      <View
+        style={[
+          styles.skeletonCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}>
+        <View style={styles.sectionHeaderPlaceholder} />
+        <View style={styles.specRowPlaceholder}>
+          <View style={styles.specLabelPlaceholder} />
+          <View style={styles.specValPlaceholder} />
+        </View>
+        <View style={styles.specRowPlaceholder}>
+          <View style={styles.specLabelPlaceholder} />
+          <View style={styles.specValPlaceholder} />
+        </View>
+        <View style={styles.specRowPlaceholder}>
+          <View style={styles.specLabelPlaceholder} />
+          <View style={styles.specValPlaceholder} />
+        </View>
+      </View>
+
+      {/* 6. Skeleton Description Card */}
+      <View
+        style={[
+          styles.skeletonCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+          },
+        ]}>
+        <View style={styles.sectionHeaderPlaceholder} />
+        <View style={styles.descLine1} />
+        <View style={styles.descLine2} />
+        <View style={styles.descLine3} />
       </View>
     </View>
   );
@@ -65,89 +118,135 @@ export function ProductDetailSkeleton() {
 const styles = StyleSheet.create({
   container: {
     paddingBottom: Spacing.four,
-  },
-  indicatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: Spacing.three,
-  },
-  loadingText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  skeletonImageCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: Spacing.four,
-    marginHorizontal: Spacing.three,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imagePlaceholder: {
-    width: '80%',
-    height: 220,
-    borderRadius: 16,
-    opacity: 0.6,
-  },
-  skeletonDetailsCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: Spacing.four,
-    marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
     gap: 12,
   },
-  skeletonPill: {
+  skeletonCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginHorizontal: Spacing.four,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  badgePlaceholder: {
+    width: 60,
+    height: 18,
+    borderRadius: 6,
+    backgroundColor: '#F1F3F9',
+  },
+  priceRowPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pricePlaceholder: {
+    width: 110,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: '#E8ECF4',
+  },
+  mrpPlaceholder: {
     width: 70,
-    height: 22,
-    borderRadius: 8,
-    opacity: 0.6,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#F1F3F9',
   },
-  skeletonTitle: {
-    width: '75%',
-    height: 26,
-    borderRadius: 8,
-    opacity: 0.7,
+  discountPlaceholder: {
+    width: 50,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: '#F1F3F9',
   },
-  skeletonPrice: {
-    width: '45%',
-    height: 30,
-    borderRadius: 8,
-    opacity: 0.6,
+  titlePlaceholder: {
+    width: '85%',
+    height: 20,
+    borderRadius: 6,
+    backgroundColor: '#F1F3F9',
   },
-  skeletonBanner: {
+  imagePlaceholder: {
     width: '100%',
-    height: 50,
+    height: 220,
     borderRadius: 12,
-    opacity: 0.5,
+    backgroundColor: '#F8F9FD',
+  },
+  dotsPlaceholder: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 4,
   },
-  skeletonDescCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: Spacing.four,
-    marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
-    gap: 10,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E2E8F0',
   },
-  skeletonDescLine1: {
-    width: '90%',
+  dotActive: {
+    width: 18,
+    backgroundColor: '#CBD5E1',
+  },
+  sectionHeaderPlaceholder: {
+    width: 140,
     height: 16,
     borderRadius: 4,
-    opacity: 0.5,
+    backgroundColor: '#E8ECF4',
+    marginBottom: 2,
   },
-  skeletonDescLine2: {
+  variantItemPlaceholder: {
     width: '100%',
-    height: 16,
-    borderRadius: 4,
-    opacity: 0.5,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FD',
+    borderWidth: 1,
+    borderColor: '#E8ECF2',
   },
-  skeletonDescLine3: {
-    width: '60%',
-    height: 16,
+  emiRowPlaceholder: {
+    width: '100%',
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#F8F9FD',
+    borderWidth: 1,
+    borderColor: '#E8ECF2',
+  },
+  specRowPlaceholder: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  specLabelPlaceholder: {
+    width: 80,
+    height: 14,
     borderRadius: 4,
-    opacity: 0.5,
+    backgroundColor: '#F1F3F9',
+  },
+  specValPlaceholder: {
+    width: 120,
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: '#E8ECF4',
+  },
+  descLine1: {
+    width: '95%',
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: '#F1F3F9',
+  },
+  descLine2: {
+    width: '85%',
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: '#F1F3F9',
+  },
+  descLine3: {
+    width: '60%',
+    height: 14,
+    borderRadius: 4,
+    backgroundColor: '#F1F3F9',
   },
 });
