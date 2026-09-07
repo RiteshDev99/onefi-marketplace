@@ -33,7 +33,7 @@ export function EmiPlanSelector({
             borderColor: theme.border,
           },
         ]}>
-        <ThemedText style={styles.sectionTitle}>CHOOSE EMI TENURE</ThemedText>
+        <ThemedText style={styles.sectionHeading}>Choose EMI tenure</ThemedText>
         <ThemedText style={styles.emptyText} themeColor="textSecondary">
           EMI plans are currently unavailable for this configuration.
         </ThemedText>
@@ -41,9 +41,8 @@ export function EmiPlanSelector({
     );
   }
 
-  const selectedSummary = selectedPlan
-    ? `${selectedPlan.tenure} Months • ${formatCurrency(selectedPlan.monthlyPayment)}/mo`
-    : 'Select a plan';
+  const hasNoCost = sortedPlans.some((p) => p.interestRate === 0);
+  const minProcessingFee = Math.min(...sortedPlans.map((p) => p.processingFee ?? 0));
 
   return (
     <View
@@ -54,27 +53,33 @@ export function EmiPlanSelector({
           borderColor: theme.border,
         },
       ]}>
-      {/* Header Row */}
-      <View style={styles.headerRow}>
-        <View style={styles.titleColumn}>
-          <ThemedText style={styles.sectionTitle}>CHOOSE EMI TENURE</ThemedText>
-          <ThemedText style={styles.sectionSubtitle} themeColor="textSecondary">
-            Select a monthly installment plan that fits your budget
+      {/* Top Banner Row matching Reference */}
+      <View style={styles.topBannerRow}>
+        <View style={styles.payNowTag}>
+          <ThemedText style={styles.payNowIcon}>💳</ThemedText>
+          <ThemedText style={styles.payNowText}>
+            {hasNoCost ? '0% Interest Plans Available' : 'Flexible Monthly Financing'}
           </ThemedText>
         </View>
 
-        {selectedPlan && (
-          <View style={[styles.summaryPill, { backgroundColor: theme.brandPurpleLight }]}>
-            <ThemedText style={[styles.summaryText, { color: theme.brandPurple }]}>
-              {selectedSummary}
-            </ThemedText>
-          </View>
-        )}
+        <View style={[styles.processingPill, { backgroundColor: '#DCFCE7' }]}>
+          <ThemedText style={styles.processingText}>
+            {minProcessingFee === 0 ? '0 Processing fees' : `From ${formatCurrency(minProcessingFee)} fee`}
+          </ThemedText>
+        </View>
       </View>
 
-      {/* EMI Plans List */}
+      {/* Subheader: Choose EMI tenure */}
+      <View style={styles.subHeaderRow}>
+        <ThemedText style={styles.sectionHeading}>Choose EMI tenure</ThemedText>
+        <ThemedText style={styles.subHeaderNote} themeColor="textSecondary">
+          Instant Approval
+        </ThemedText>
+      </View>
+
+      {/* EMI Option Rows */}
       <View style={styles.plansList} accessibilityRole="radiogroup">
-        {sortedPlans.map((plan) => {
+        {sortedPlans.map((plan, index) => {
           const isSelected =
             selectedPlan?._id === plan._id ||
             (selectedPlan?.tenure === plan.tenure &&
@@ -83,203 +88,168 @@ export function EmiPlanSelector({
           const isNoCost = plan.interestRate === 0;
 
           return (
-            <Pressable
-              key={plan._id || `${plan.tenure}-${plan.monthlyPayment}`}
-              onPress={() => onSelectPlan(plan)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`${plan.tenure} Months EMI, ${formatCurrency(
-                plan.monthlyPayment
-              )} per month, ${isNoCost ? 'No-Cost EMI 0% Interest' : `${plan.interestRate}% Interest`}${
-                plan.cashback ? `, Cashback ${formatCurrency(plan.cashback)}` : ''
-              }`}
-              style={({ pressed }) => [
-                styles.planCard,
-                {
-                  borderColor: isSelected ? theme.brandPurple : theme.border,
-                  backgroundColor: isSelected ? theme.brandPurpleLight : theme.card,
-                },
-                pressed && styles.pressed,
-              ]}>
-              {/* Top Row: Radio + Monthly Payment + Tenure */}
-              <View style={styles.topRow}>
-                {/* Radio Indicator */}
-                <View
-                  style={[
-                    styles.radioOuter,
-                    {
-                      borderColor: isSelected ? theme.brandPurple : '#CBD5E1',
-                    },
-                  ]}>
-                  {isSelected && (
-                    <View
-                      style={[
-                        styles.radioInner,
-                        { backgroundColor: theme.brandPurple },
-                      ]}
-                    />
-                  )}
-                </View>
+            <View key={plan._id || `${plan.tenure}-${plan.monthlyPayment}`}>
+              {index > 0 && <View style={[styles.divider, { backgroundColor: theme.border }]} />}
 
-                {/* Monthly Payment Hero */}
-                <View style={styles.paymentInfo}>
-                  <ThemedText
+              <Pressable
+                onPress={() => onSelectPlan(plan)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`${plan.tenure} Months EMI, ${formatCurrency(
+                  plan.monthlyPayment
+                )} per month, ${isNoCost ? '0% EMI' : `${plan.interestRate}% Interest`}`}
+                style={({ pressed }) => [
+                  styles.planRow,
+                  isSelected && { backgroundColor: theme.brandPurpleLight },
+                  pressed && styles.pressed,
+                ]}>
+                {/* Left Radio + Monthly Plan Amount */}
+                <View style={styles.leftPlanCol}>
+                  <View
                     style={[
-                      styles.monthlyPaymentText,
-                      isSelected && { color: theme.brandPurple },
+                      styles.radioOuter,
+                      {
+                        borderColor: isSelected ? theme.brandPurple : '#CBD5E1',
+                      },
                     ]}>
-                    {formatCurrency(plan.monthlyPayment)}{' '}
-                    <ThemedText style={styles.perMonthText} themeColor="textSecondary">
-                      / month
-                    </ThemedText>
-                  </ThemedText>
-                </View>
-
-                {/* Tenure Pill */}
-                <View
-                  style={[
-                    styles.tenurePill,
-                    {
-                      backgroundColor: isSelected ? '#FFFFFF' : theme.backgroundElement,
-                      borderColor: isSelected ? theme.brandPurple : theme.border,
-                    },
-                  ]}>
-                  <ThemedText
-                    style={[
-                      styles.tenureText,
-                      isSelected && { color: theme.brandPurple, fontWeight: '800' },
-                    ]}>
-                    {plan.tenure} Months
-                  </ThemedText>
-                </View>
-              </View>
-
-              {/* Badges Row: Interest Rate + Cashback */}
-              <View style={styles.badgesRow}>
-                {/* Interest Rate Badge */}
-                <View
-                  style={[
-                    styles.badge,
-                    isNoCost
-                      ? { backgroundColor: '#DCFCE7' }
-                      : { backgroundColor: '#F1F5F9' },
-                  ]}>
-                  <ThemedText
-                    style={[
-                      styles.badgeText,
-                      isNoCost ? { color: '#15803D' } : { color: '#475569' },
-                    ]}>
-                    {isNoCost ? '✓ No-Cost EMI (0% Interest)' : `${plan.interestRate}% Interest`}
-                  </ThemedText>
-                </View>
-
-                {/* Cashback Badge */}
-                {typeof plan.cashback === 'number' && plan.cashback > 0 ? (
-                  <View style={[styles.badge, { backgroundColor: '#FEF3C7' }]}>
-                    <ThemedText style={[styles.badgeText, { color: '#B45309' }]}>
-                      🎁 {formatCurrency(plan.cashback)} Cashback
-                    </ThemedText>
+                    {isSelected && (
+                      <View
+                        style={[
+                          styles.radioInner,
+                          { backgroundColor: theme.brandPurple },
+                        ]}
+                      />
+                    )}
                   </View>
-                ) : null}
-              </View>
 
-              {/* Bottom Cost Summary Row (Processing Fee & Total Cost) */}
-              {(typeof plan.processingFee === 'number' || typeof plan.totalCost === 'number') && (
-                <View style={[styles.costSummaryRow, { borderTopColor: theme.border }]}>
-                  {typeof plan.processingFee === 'number' ? (
-                    <ThemedText style={styles.costDetailText} themeColor="textSecondary">
-                      Processing Fee:{' '}
-                      <ThemedText style={styles.costDetailBold}>
-                        {plan.processingFee > 0 ? formatCurrency(plan.processingFee) : 'Free'}
-                      </ThemedText>
+                  <ThemedText style={styles.tenureEquation}>
+                    <ThemedText style={[styles.paymentBold, isSelected && { color: theme.brandPurple }]}>
+                      {formatCurrency(plan.monthlyPayment)}
                     </ThemedText>
-                  ) : null}
+                    {' × '}{plan.tenure} mons
+                  </ThemedText>
+                </View>
 
-                  {typeof plan.totalCost === 'number' ? (
-                    <ThemedText style={styles.costDetailText} themeColor="textSecondary">
-                      Total Cost:{' '}
-                      <ThemedText style={styles.costDetailBold}>
-                        {formatCurrency(plan.totalCost)}
-                      </ThemedText>
+                {/* Right Badge / Interest Rate */}
+                <View style={styles.rightPlanCol}>
+                  {isNoCost ? (
+                    <View style={[styles.noCostBadge, { backgroundColor: theme.brandPurple }]}>
+                      <ThemedText style={styles.noCostBadgeText}>*0% EMI</ThemedText>
+                    </View>
+                  ) : (
+                    <ThemedText style={styles.interestText} themeColor="textSecondary">
+                      {plan.interestRate}% p.a.
+                    </ThemedText>
+                  )}
+
+                  {typeof plan.cashback === 'number' && plan.cashback > 0 ? (
+                    <ThemedText style={styles.cashbackSubtext}>
+                      +{formatCurrency(plan.cashback)} cashback
                     </ThemedText>
                   ) : null}
                 </View>
-              )}
-            </Pressable>
+              </Pressable>
+            </View>
           );
         })}
       </View>
+
+      {/* Footer note */}
+      <ThemedText style={styles.footerNote} themeColor="textSecondary">
+        *Transparent monthly repayment schedules based on verified EMI plan
+      </ThemedText>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: Spacing.four,
+    padding: Spacing.three,
     marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
-    gap: Spacing.three,
+    marginTop: Spacing.two,
+    gap: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  headerRow: {
+  topBannerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 8,
     flexWrap: 'wrap',
   },
-  titleColumn: {
-    flex: 1,
-    gap: 2,
+  payNowTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  sectionTitle: {
+  payNowIcon: {
+    fontSize: 14,
+  },
+  payNowText: {
     fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 0.6,
-    color: '#6B7280',
-    textTransform: 'uppercase',
+    fontWeight: '700',
+    color: '#111827',
   },
-  sectionSubtitle: {
-    fontSize: 12,
-    marginTop: 1,
+  processingPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
-  summaryPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  summaryText: {
+  processingText: {
     fontSize: 11,
     fontWeight: '700',
+    color: '#15803D',
+  },
+  subHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  sectionHeading: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  subHeaderNote: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   emptyText: {
     fontSize: 13,
     paddingVertical: Spacing.two,
   },
   plansList: {
-    gap: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    overflow: 'hidden',
   },
-  planCard: {
-    borderRadius: 16,
-    borderWidth: 1.5,
-    padding: Spacing.three,
+  divider: {
+    height: 1,
+  },
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     gap: 8,
   },
   pressed: {
     opacity: 0.85,
   },
-  topRow: {
+  leftPlanCol: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: 10,
+    flex: 1,
   },
   radioOuter: {
     width: 20,
@@ -294,59 +264,43 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  paymentInfo: {
-    flex: 1,
+  tenureEquation: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
   },
-  monthlyPaymentText: {
-    fontSize: 17,
+  paymentBold: {
+    fontSize: 15,
     fontWeight: '800',
     color: '#111827',
   },
-  perMonthText: {
-    fontSize: 12,
-    fontWeight: '500',
+  rightPlanCol: {
+    alignItems: 'flex-end',
+    gap: 2,
   },
-  tenurePill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  tenureText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-    marginLeft: 30, // Aligns neatly under the payment info past the radio circle
-  },
-  badge: {
-    paddingHorizontal: 8,
+  noCostBadge: {
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 4,
   },
-  badgeText: {
-    fontSize: 11,
+  noCostBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  interestText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  cashbackSubtext: {
+    fontSize: 10,
     fontWeight: '700',
+    color: '#15803D',
   },
-  costSummaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 8,
-    marginTop: 4,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginLeft: 30,
-  },
-  costDetailText: {
+  footerNote: {
     fontSize: 11,
-  },
-  costDetailBold: {
-    fontWeight: '700',
-    color: '#111827',
+    marginTop: 2,
   },
 });
+

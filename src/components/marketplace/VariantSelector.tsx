@@ -184,17 +184,17 @@ export function VariantSelector({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     padding: Spacing.four,
     marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
+    marginTop: Spacing.two,
     gap: Spacing.three,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   headerRow: {
     flexDirection: 'row',
@@ -277,10 +277,11 @@ const styles = StyleSheet.create({
   },
   pricingCol: {
     alignItems: 'flex-end',
+    justifyContent: 'center',
     gap: 2,
   },
   variantPrice: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: '#111827',
   },
@@ -290,18 +291,20 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   variantMrp: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#9CA3AF',
     textDecorationLine: 'line-through',
     fontWeight: '500',
   },
   discountBadge: {
     paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingVertical: 2,
     borderRadius: 4,
+    alignSelf: 'center',
   },
   discountText: {
     fontSize: 9,
     fontWeight: '800',
+    letterSpacing: 0.2,
   },
 });
