@@ -25,7 +25,7 @@ export function MarketplaceProductCard({ product }: MarketplaceProductCardProps)
   const variant = getRepresentativeVariant(product);
   const startingEMI = getStartingEMI(variant);
   const discount = getDiscountPercentage(variant?.mrp, variant?.price);
-  const variantCount = product.variants?.length || 0;
+  const isAvailable = variant?.inStock !== false;
 
   const handlePress = () => {
     router.push({
@@ -37,6 +37,10 @@ export function MarketplaceProductCard({ product }: MarketplaceProductCardProps)
   return (
     <Pressable
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`${product.name}, starting from ${
+        startingEMI ? formatCurrency(startingEMI) + ' per month' : 'view details'
+      }`}
       style={({ pressed }) => [
         styles.cardContainer,
         {
@@ -45,29 +49,16 @@ export function MarketplaceProductCard({ product }: MarketplaceProductCardProps)
         },
         pressed && styles.cardPressed,
       ]}>
-      {/* Top Media Viewport */}
-      <View style={[styles.imageContainer, { backgroundColor: theme.backgroundElement }]}>
-        {/* Discount Badge */}
+      {/* Top Image Section */}
+      <View style={styles.imageContainer}>
+        {/* Discount Badge if available */}
         {discount ? (
-          <View style={[styles.discountBadge, { backgroundColor: '#DC2626' }]}>
-            <ThemedText style={styles.discountBadgeText}>{discount}% OFF</ThemedText>
+          <View style={styles.discountBadge}>
+            <ThemedText numberOfLines={1} style={styles.discountBadgeText}>
+              {discount}% off
+            </ThemedText>
           </View>
         ) : null}
-
-        {/* In-Stock Status Pill */}
-        <View
-          style={[
-            styles.stockPill,
-            { backgroundColor: variant?.inStock ? theme.badgeGreen : '#FEE2E2' },
-          ]}>
-          <ThemedText
-            style={[
-              styles.stockText,
-              { color: variant?.inStock ? theme.badgeGreenText : '#DC2626' },
-            ]}>
-            {variant?.inStock ? '● In Stock' : 'Out of Stock'}
-          </ThemedText>
-        </View>
 
         {/* Product Image */}
         {variant?.image ? (
@@ -84,66 +75,53 @@ export function MarketplaceProductCard({ product }: MarketplaceProductCardProps)
         )}
       </View>
 
-      {/* Product Content Details */}
+      {/* Card Info Section */}
       <View style={styles.detailsContainer}>
-        {/* Brand & Variant Count Row */}
-        <View style={styles.metaRow}>
-          <View style={[styles.brandPill, { backgroundColor: theme.brandPurpleLight }]}>
-            <ThemedText style={[styles.brandPillText, { color: theme.brandPurple }]}>
-              {product.brand}
+        {/* Prominent Monthly EMI */}
+        {startingEMI ? (
+          <ThemedText style={styles.emiMonthly}>
+            {formatCurrency(startingEMI)}
+            <ThemedText style={styles.emiPerMon} themeColor="textSecondary">
+              /mon
             </ThemedText>
-          </View>
-          {variantCount > 1 && (
-            <ThemedText style={styles.variantCountText} themeColor="textSecondary">
-              {variantCount} configurations
-            </ThemedText>
-          )}
-        </View>
+          </ThemedText>
+        ) : variant?.price ? (
+          <ThemedText style={styles.emiMonthly}>
+            {formatCurrency(variant.price)}
+          </ThemedText>
+        ) : null}
 
-        {/* Product Title */}
-        <ThemedText style={styles.productTitle} numberOfLines={1}>
+        {/* Product Name (2 Lines Truncated) */}
+        <ThemedText style={styles.productTitle} numberOfLines={2} ellipsizeMode="tail">
           {product.name}
         </ThemedText>
 
-        {/* Variant Info (e.g. 128GB • Deep Blue) */}
-        {variant && (
-          <ThemedText style={styles.variantInfo} themeColor="textSecondary" numberOfLines={1}>
-            {variant.storage} • {variant.color}
-          </ThemedText>
-        )}
-
-        {/* Price & MRP Row */}
+        {/* Pricing Row: Selling Price + MRP + Discount */}
         <View style={styles.pricingRow}>
           {variant?.price ? (
-            <ThemedText style={styles.sellingPrice}>
+            <ThemedText style={styles.sellingPrice} numberOfLines={1}>
               {formatCurrency(variant.price)}
             </ThemedText>
           ) : null}
 
           {variant?.mrp && variant.mrp > (variant.price || 0) ? (
-            <ThemedText style={styles.mrpPrice}>
+            <ThemedText style={styles.mrpPrice} numberOfLines={1}>
               {formatCurrency(variant.mrp)}
+            </ThemedText>
+          ) : null}
+
+          {discount ? (
+            <ThemedText style={styles.discountText} numberOfLines={1}>
+              {discount}% off
             </ThemedText>
           ) : null}
         </View>
 
-        {/* Starting EMI Pill Banner */}
-        {startingEMI ? (
-          <View
-            style={[
-              styles.emiBanner,
-              {
-                backgroundColor: theme.brandPurpleLight,
-                borderColor: theme.border,
-              },
-            ]}>
-            <View style={styles.emiHeaderRow}>
-              <ThemedText style={[styles.emiLabel, { color: theme.brandPurple }]}>
-                EMIs from <ThemedText style={styles.emiAmount}>{formatCurrency(startingEMI)}</ThemedText>/mo
-              </ThemedText>
-            </View>
-            <ThemedText style={[styles.emiBenefitText, { color: theme.brandPurple }]}>
-              ✓ 0% Interest Plans Available
+        {/* Stock / Variant Pill */}
+        {!isAvailable ? (
+          <View style={styles.outOfStockPill}>
+            <ThemedText style={styles.outOfStockText} numberOfLines={1}>
+              Out of Stock
             </ThemedText>
           </View>
         ) : null}
@@ -154,27 +132,31 @@ export function MarketplaceProductCard({ product }: MarketplaceProductCardProps)
 
 const styles = StyleSheet.create({
   cardContainer: {
-    borderRadius: 18,
+    width: '100%',
+    borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: Spacing.three,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
     elevation: 2,
+    backgroundColor: '#FFFFFF',
   },
   cardPressed: {
-    opacity: 0.92,
-    transform: [{ scale: 0.995 }],
+    opacity: 0.9,
+    transform: [{ scale: 0.985 }],
   },
   imageContainer: {
     width: '100%',
-    height: 180,
+    height: 135,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    padding: Spacing.three,
+    padding: Spacing.two,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F1F5F9',
   },
   productImage: {
     width: '100%',
@@ -185,111 +167,83 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fallbackEmoji: {
-    fontSize: 48,
+    fontSize: 36,
   },
   discountBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    top: 6,
+    left: 6,
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
     zIndex: 2,
+    alignSelf: 'flex-start',
+    maxWidth: 60,
   },
   discountBadgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-  stockPill: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    zIndex: 2,
-  },
-  stockText: {
-    fontSize: 10,
-    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   detailsContainer: {
-    padding: Spacing.three,
-    gap: 6,
+    padding: 8,
+    gap: 2,
   },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
+  emiMonthly: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: '#111827',
   },
-  brandPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  brandPillText: {
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  variantCountText: {
-    fontSize: 11,
+  emiPerMon: {
+    fontSize: 11.5,
     fontWeight: '500',
   },
   productTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  variantInfo: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: -2,
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#1F2937',
+    lineHeight: 16,
+    minHeight: 32,
   },
   pricingRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
-    marginTop: 4,
+    alignItems: 'center',
+    columnGap: 5,
+    rowGap: 1,
+    flexWrap: 'wrap',
+    marginTop: 2,
   },
   sellingPrice: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 11.5,
+    fontWeight: '700',
     color: '#111827',
   },
   mrpPrice: {
-    fontSize: 13,
+    fontSize: 10,
     color: '#9CA3AF',
     textDecorationLine: 'line-through',
     fontWeight: '500',
   },
-  emiBanner: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginTop: 6,
-    gap: 2,
-  },
-  emiHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  emiLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  emiAmount: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  emiBenefitText: {
+  discountText: {
     fontSize: 10,
-    fontWeight: '600',
-    opacity: 0.9,
+    color: '#15803D',
+    fontWeight: '700',
+  },
+  outOfStockPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  outOfStockText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#DC2626',
   },
 });
+
+
