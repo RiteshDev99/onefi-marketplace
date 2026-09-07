@@ -1,13 +1,25 @@
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, ScrollView, View, Pressable, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { ProductDetailHeader } from '@/components/marketplace/ProductDetailHeader';
+import { ProductDetailImage } from '@/components/marketplace/ProductDetailImage';
+import { ProductPricing } from '@/components/marketplace/ProductPricing';
+import { ProductDescription } from '@/components/marketplace/ProductDescription';
+import { ProductAssurances } from '@/components/marketplace/ProductAssurances';
+import { ProductDetailSkeleton } from '@/components/marketplace/ProductDetailSkeleton';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { productService } from '@/services/productService';
+import { Product } from '@/types/product';
+import {
+  getDiscountPercentage,
+  getRepresentativeVariant,
+  getStartingEMI,
+} from '@/utils/productUtils';
 
 export default function ProductDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -15,153 +27,236 @@ export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadProduct = useCallback(async () => {
+    if (!slug) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await productService.getProductBySlug(String(slug));
+      setProduct(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load product details');
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
+
+  const variant = product ? getRepresentativeVariant(product) : undefined;
+  const startingEMI = getStartingEMI(variant);
+  const discount = getDiscountPercentage(variant?.mrp, variant?.price);
+
   return (
-    <ThemedView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Top Header with Back Navigation */}
-      <View
-        style={[
-          styles.header,
-          {
-            paddingTop: insets.top + Spacing.two,
-            backgroundColor: theme.card,
-            borderColor: theme.border,
-          },
-        ]}>
-        <Pressable
-          onPress={() => router.back()}
-          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
-          <SymbolView
-            name={{ ios: 'chevron.left', android: 'arrow_back', web: 'chevron_left' }}
-            size={22}
-            tintColor={theme.text}
-          />
-        </Pressable>
+    <ThemedView style={[styles.outerContainer, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={theme.text === '#F8FAFC' ? 'light-content' : 'dark-content'} />
 
-        <View style={styles.headerTitleContainer}>
-          <ThemedText style={styles.headerTitle} numberOfLines={1}>
-            Product Details
-          </ThemedText>
+      {/* Safe Area Top Spacer */}
+      <View style={{ height: insets.top, backgroundColor: theme.card }} />
+
+      {/* Top Navigation Header */}
+      <ProductDetailHeader title={product?.name} brand={product?.brand} />
+
+      {/* Scrollable Content */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: insets.bottom + Spacing.six },
+        ]}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.responsiveWrapper}>
+          {loading ? (
+            <ProductDetailSkeleton />
+          ) : error ? (
+            <View
+              style={[
+                styles.messageCard,
+                {
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <View style={[styles.iconPill, { backgroundColor: '#FEE2E2' }]}>
+                <ThemedText style={styles.errorIcon}>⚠️</ThemedText>
+              </View>
+              <ThemedText style={styles.cardTitle}>Unable to Load Product</ThemedText>
+              <ThemedText style={styles.cardSubtitle} themeColor="textSecondary">
+                {error}
+              </ThemedText>
+
+              <View style={styles.actionsRow}>
+                <Pressable
+                  onPress={loadProduct}
+                  style={({ pressed }) => [
+                    styles.primaryBtn,
+                    { backgroundColor: theme.brandPurple },
+                    pressed && styles.pressed,
+                  ]}>
+                  <ThemedText style={styles.primaryBtnText}>Retry</ThemedText>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => router.back()}
+                  style={({ pressed }) => [
+                    styles.secondaryBtn,
+                    { borderColor: theme.border, backgroundColor: theme.backgroundElement },
+                    pressed && styles.pressed,
+                  ]}>
+                  <ThemedText style={styles.secondaryBtnText}>Back to 1Fi Shop</ThemedText>
+                </Pressable>
+              </View>
+            </View>
+          ) : !product ? (
+            <View
+              style={[
+                styles.messageCard,
+                {
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                },
+              ]}>
+              <View style={[styles.iconPill, { backgroundColor: theme.brandPurpleLight }]}>
+                <ThemedText style={styles.errorIcon}>🔍</ThemedText>
+              </View>
+              <ThemedText style={styles.cardTitle}>Product Not Found</ThemedText>
+              <ThemedText style={styles.cardSubtitle} themeColor="textSecondary">
+                We couldn't find a device matching '{slug}'. It may have been discontinued or removed.
+              </ThemedText>
+
+              <Pressable
+                onPress={() => router.back()}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  { backgroundColor: theme.brandPurple },
+                  pressed && styles.pressed,
+                ]}>
+                <ThemedText style={styles.primaryBtnText}>Back to 1Fi Shop</ThemedText>
+              </Pressable>
+            </View>
+          ) : (
+            <View>
+              {/* Product Media */}
+              <ProductDetailImage
+                imageUrl={variant?.image}
+                discountPercentage={discount}
+                inStock={variant?.inStock}
+              />
+
+              {/* Product Pricing & Metadata */}
+              <ProductPricing
+                brand={product.brand}
+                name={product.name}
+                category={product.category}
+                price={variant?.price}
+                mrp={variant?.mrp}
+                discountPercentage={discount}
+                startingEMI={startingEMI}
+                variantCount={product.variants?.length}
+              />
+
+              {/* Product Description */}
+              <ProductDescription description={product.description} />
+
+              {/* 1Fi Trust & Assurances */}
+              <ProductAssurances />
+            </View>
+          )}
         </View>
-
-        <View style={styles.headerRightPlaceholder} />
-      </View>
-
-      {/* Placeholder Content Area for Step 3 */}
-      <View style={styles.content}>
-        <View
-          style={[
-            styles.infoCard,
-            {
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-            },
-          ]}>
-          <View style={[styles.badge, { backgroundColor: theme.brandPurpleLight }]}>
-            <ThemedText style={[styles.badgeText, { color: theme.brandPurple }]}>
-              Step 2 Navigation Established
-            </ThemedText>
-          </View>
-
-          <ThemedText style={styles.slugTitle}>
-            {slug ? String(slug) : 'Product'}
-          </ThemedText>
-
-          <ThemedText style={styles.description} themeColor="textSecondary">
-            Route `/products/${slug}` is active and connected to the marketplace catalog. Product specs, variant switcher, and interactive EMI financing plans will be built in Step 3.
-          </ThemedText>
-
-          <Pressable
-            onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.backToCatalogBtn,
-              { backgroundColor: theme.brandPurple },
-              pressed && styles.pressed,
-            ]}>
-            <ThemedText style={styles.backBtnText}>← Back to 1Fi Shop</ThemedText>
-          </Pressable>
-        </View>
-      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outerContainer: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitleContainer: {
+  scrollView: {
     flex: 1,
+  },
+  contentContainer: {
+    flexGrow: 1,
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+  responsiveWrapper: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
   },
-  headerRightPlaceholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-    padding: Spacing.four,
-    justifyContent: 'center',
-  },
-  infoCard: {
+  messageCard: {
+    margin: Spacing.four,
     padding: Spacing.five,
     borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
-    gap: Spacing.three,
+    justifyContent: 'center',
+    gap: Spacing.two,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
   },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+  iconPill: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  badgeText: {
-    fontSize: 11,
+  errorIcon: {
+    fontSize: 26,
+  },
+  cardTitle: {
+    fontSize: 18,
     fontWeight: '700',
-  },
-  slugTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    textAlign: 'center',
     color: '#111827',
-  },
-  description: {
-    fontSize: 13,
-    lineHeight: 19,
     textAlign: 'center',
-    maxWidth: 300,
   },
-  backToCatalogBtn: {
+  cardSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    maxWidth: 290,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     marginTop: Spacing.two,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 20,
   },
-  backBtnText: {
+  primaryBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 20,
+    shadowColor: '#6226E3',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  primaryBtnText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
+  },
+  secondaryBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  secondaryBtnText: {
+    color: '#374151',
+    fontSize: 13,
+    fontWeight: '600',
   },
   pressed: {
     opacity: 0.8,
