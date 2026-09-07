@@ -23,7 +23,7 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
           borderColor: theme.border,
         },
       ]}>
-      <ThemedText style={styles.sectionTitle}>Overview & Specifications</ThemedText>
+      <ThemedText style={styles.sectionTitle}>Product Description</ThemedText>
 
       <ThemedText style={styles.descriptionText} themeColor="textSecondary">
         {description}
@@ -34,17 +34,17 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     padding: Spacing.four,
     marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
-    gap: Spacing.two,
+    marginTop: Spacing.two,
+    gap: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   sectionTitle: {
     fontSize: 16,
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   descriptionText: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
     fontWeight: '400',
   },
 });

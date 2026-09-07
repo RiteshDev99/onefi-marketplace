@@ -150,17 +150,17 @@ export function SelectedEmiSummary({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     padding: Spacing.four,
     marginHorizontal: Spacing.three,
-    marginTop: Spacing.three,
+    marginTop: Spacing.two,
     gap: Spacing.three,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   headerRow: {
     flexDirection: 'row',
