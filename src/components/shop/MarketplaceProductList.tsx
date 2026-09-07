@@ -28,8 +28,9 @@ export function MarketplaceProductList({ onProductsLoaded, refreshTrigger }: Mar
       const data = await productService.getProducts();
       setProducts(data);
       onProductsLoaded?.(data.length);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load products');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load products';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -45,12 +46,10 @@ export function MarketplaceProductList({ onProductsLoaded, refreshTrigger }: Mar
       <View style={styles.headerRow}>
         <View style={styles.titleColumn}>
           <ThemedText style={styles.sectionTitle}>1Fi Marketplace</ThemedText>
-          <ThemedText style={styles.sectionSubtitle} themeColor="textSecondary">
-            {loading
-              ? 'Fetching flagship devices...'
-              : products.length > 0
+          <ThemedText style={styles.sectionSubtitle} themeColor="textSecondary" numberOfLines={1}>
+            {products.length > 0
               ? `${products.length} Flagship Devices Available on Zero-Cost EMI`
-              : 'Smartphones & Electronics'}
+              : 'Smartphones & Electronics on Zero-Cost EMI'}
           </ThemedText>
         </View>
 
@@ -82,9 +81,11 @@ export function MarketplaceProductList({ onProductsLoaded, refreshTrigger }: Mar
           </ThemedText>
         </View>
       ) : (
-        <View style={styles.cardsList}>
+        <View style={styles.gridList}>
           {products.map((product) => (
-            <MarketplaceProductCard key={product._id || product.slug} product={product} />
+            <View key={product._id || product.slug} style={styles.gridItem}>
+              <MarketplaceProductCard product={product} />
+            </View>
           ))}
         </View>
       )}
@@ -94,59 +95,67 @@ export function MarketplaceProductList({ onProductsLoaded, refreshTrigger }: Mar
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.three,
-    gap: Spacing.two,
+    paddingHorizontal: Spacing.four,
+    gap: 4,
+    width: '100%',
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.one,
+    marginBottom: 4,
   },
   titleColumn: {
     flex: 1,
-    gap: 2,
+    gap: 1,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#111827',
   },
   sectionSubtitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#6B7280',
-    lineHeight: 16,
+    lineHeight: 15,
   },
   liveBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12,
+    marginLeft: 6,
   },
   liveBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
-  cardsList: {
-    marginTop: Spacing.one,
+  gridList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 2,
+  },
+  gridItem: {
+    width: '48%',
   },
   emptyCard: {
     padding: Spacing.five,
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.two,
   },
   emptyEmoji: {
-    fontSize: 36,
+    fontSize: 32,
   },
   emptyTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   emptySubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
   },
 });

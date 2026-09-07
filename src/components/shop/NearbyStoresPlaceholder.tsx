@@ -100,7 +100,7 @@ export function NearbyStoresPlaceholder() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.four,
     gap: Spacing.two,
   },
   headerRow: {
@@ -110,28 +110,28 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#111827',
   },
   locationPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 14,
     borderWidth: 1,
   },
   locationText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '700',
   },
   cardsList: {
-    gap: Spacing.three,
+    gap: Spacing.two,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     padding: Spacing.three,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -141,19 +141,19 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   logoBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 14,
+    width: 54,
+    height: 54,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoEmoji: {
-    fontSize: 26,
+    fontSize: 24,
   },
   infoColumn: {
     flex: 1,
-    gap: 4,
+    gap: 3,
   },
   storeTopRow: {
     flexDirection: 'row',
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   storeName: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '700',
     color: '#111827',
     flex: 1,
@@ -174,14 +174,14 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   distanceText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '700',
     color: '#6B7280',
     letterSpacing: 0.3,
   },
   storeAddress: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11.5,
+    lineHeight: 15,
     color: '#6B7280',
     fontWeight: '400',
   },

@@ -92,23 +92,23 @@ export function TopBrandsPlaceholder() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.four,
     gap: Spacing.two,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#111827',
     marginBottom: Spacing.one,
   },
   cardsList: {
-    gap: Spacing.three,
+    gap: Spacing.two,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.three,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -118,9 +118,9 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   logoBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 14,
+    width: 60,
+    height: 60,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 4,
@@ -131,12 +131,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   standardLogo: {
-    fontSize: 10,
+    fontSize: 9.5,
     letterSpacing: 0.5,
   },
   appleLogo: {
-    fontSize: 22,
-    lineHeight: 26,
+    fontSize: 20,
+    lineHeight: 24,
   },
   logoSubtext: {
     color: 'rgba(255, 255, 255, 0.85)',
@@ -147,15 +147,15 @@ const styles = StyleSheet.create({
   },
   infoColumn: {
     flex: 1,
-    gap: 4,
+    gap: 2,
   },
   brandName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
   },
   brandOffer: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
   },
