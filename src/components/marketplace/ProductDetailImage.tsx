@@ -24,14 +24,14 @@ export function ProductDetailImage({
       style={[
         styles.container,
         {
-          backgroundColor: theme.card,
+          backgroundColor: '#FFFFFF',
           borderColor: theme.border,
         },
       ]}>
-      {/* Top Badges Row */}
-      <View style={styles.topBadgesRow}>
+      {/* Top Status Indicators */}
+      <View style={styles.topRow}>
         {discountPercentage ? (
-          <View style={[styles.discountBadge, { backgroundColor: '#DC2626' }]}>
+          <View style={styles.discountBadge}>
             <ThemedText style={styles.discountBadgeText}>
               {discountPercentage}% OFF
             </ThemedText>
@@ -40,22 +40,14 @@ export function ProductDetailImage({
           <View />
         )}
 
-        <View
-          style={[
-            styles.stockBadge,
-            { backgroundColor: inStock ? theme.badgeGreen : '#FEE2E2' },
-          ]}>
-          <ThemedText
-            style={[
-              styles.stockBadgeText,
-              { color: inStock ? theme.badgeGreenText : '#DC2626' },
-            ]}>
-            {inStock ? '● In Stock • Ready to Ship' : 'Out of Stock'}
-          </ThemedText>
-        </View>
+        {!inStock && (
+          <View style={styles.outOfStockBadge}>
+            <ThemedText style={styles.outOfStockText}>Out of Stock</ThemedText>
+          </View>
+        )}
       </View>
 
-      {/* Main Product Image Viewport */}
+      {/* Main Image Viewport */}
       <View style={styles.imageViewport}>
         {imageUrl ? (
           <Image
@@ -71,11 +63,9 @@ export function ProductDetailImage({
         )}
       </View>
 
-      {/* Bottom Guarantee Banner */}
-      <View style={[styles.guaranteeBanner, { backgroundColor: theme.backgroundElement }]}>
-        <ThemedText style={styles.guaranteeText}>
-          ✓ 100% Brand Sealed & Manufacturer Verified
-        </ThemedText>
+      {/* Single Clean Dot Indicator */}
+      <View style={styles.paginationRow}>
+        <View style={[styles.activeDot, { backgroundColor: theme.brandPurple }]} />
       </View>
     </View>
   );
@@ -93,37 +83,41 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginHorizontal: Spacing.three,
     marginTop: Spacing.two,
+    paddingVertical: Spacing.two,
   },
-  topBadgesRow: {
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Spacing.three,
-    zIndex: 2,
+    paddingHorizontal: Spacing.three,
+    minHeight: 24,
   },
   discountBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   discountBadgeText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
-  stockBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+  outOfStockBadge: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
-  stockBadgeText: {
+  outOfStockText: {
+    color: '#DC2626',
     fontSize: 11,
     fontWeight: '700',
   },
   imageViewport: {
     width: '100%',
-    height: 260,
+    height: 280,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.three,
@@ -137,17 +131,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fallbackEmoji: {
-    fontSize: 72,
+    fontSize: 64,
   },
-  guaranteeBanner: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+  paginationRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 8,
+    gap: 6,
   },
-  guaranteeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#475569',
+  activeDot: {
+    width: 16,
+    height: 4,
+    borderRadius: 2,
   },
 });
+
