@@ -44,20 +44,7 @@ export function MarketplaceProductList({ onProductsLoaded, refreshTrigger }: Mar
     <View style={styles.container}>
       {/* Header Row with Title and Catalog Status */}
       <View style={styles.headerRow}>
-        <View style={styles.titleColumn}>
-          <ThemedText style={styles.sectionTitle}>1Fi Marketplace</ThemedText>
-          <ThemedText style={styles.sectionSubtitle} themeColor="textSecondary" numberOfLines={1}>
-            {products.length > 0
-              ? `${products.length} Flagship Devices Available on Zero-Cost EMI`
-              : 'Smartphones & Electronics on Zero-Cost EMI'}
-          </ThemedText>
-        </View>
-
-        <View style={[styles.liveBadge, { backgroundColor: theme.badgeGreen }]}>
-          <ThemedText style={[styles.liveBadgeText, { color: theme.badgeGreenText }]}>
-            ● Live Catalog
-          </ThemedText>
-        </View>
+        
       </View>
 
       {/* Main Content Area */}
