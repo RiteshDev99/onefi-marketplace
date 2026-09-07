@@ -8,14 +8,20 @@ import { ThemedView } from '@/components/themed-view';
 import { ProductDetailHeader } from '@/components/marketplace/ProductDetailHeader';
 import { ProductDetailImage } from '@/components/marketplace/ProductDetailImage';
 import { ProductPricing } from '@/components/marketplace/ProductPricing';
+import { VariantSelector } from '@/components/marketplace/VariantSelector';
+import { EmiPlanSelector } from '@/components/marketplace/EmiPlanSelector';
+import { SelectedEmiSummary } from '@/components/marketplace/SelectedEmiSummary';
+import { PlanConfirmationModal } from '@/components/marketplace/PlanConfirmationModal';
 import { ProductDescription } from '@/components/marketplace/ProductDescription';
 import { ProductAssurances } from '@/components/marketplace/ProductAssurances';
 import { ProductDetailSkeleton } from '@/components/marketplace/ProductDetailSkeleton';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { productService } from '@/services/productService';
-import { Product } from '@/types/product';
+import { EMIPlan, Product, ProductVariant } from '@/types/product';
 import {
+  formatCurrency,
+  getDefaultEmiPlan,
   getDiscountPercentage,
   getRepresentativeVariant,
   getStartingEMI,
@@ -28,6 +34,9 @@ export default function ProductDetailScreen() {
   const theme = useTheme();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(undefined);
+  const [selectedEmiPlan, setSelectedEmiPlan] = useState<EMIPlan | undefined>(undefined);
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +47,11 @@ export default function ProductDetailScreen() {
     try {
       const data = await productService.getProductBySlug(String(slug));
       setProduct(data);
+      if (data) {
+        const initialVariant = getRepresentativeVariant(data);
+        setSelectedVariant(initialVariant);
+        setSelectedEmiPlan(getDefaultEmiPlan(initialVariant?.emiPlans));
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load product details');
     } finally {
@@ -49,9 +63,19 @@ export default function ProductDetailScreen() {
     loadProduct();
   }, [loadProduct]);
 
-  const variant = product ? getRepresentativeVariant(product) : undefined;
-  const startingEMI = getStartingEMI(variant);
-  const discount = getDiscountPercentage(variant?.mrp, variant?.price);
+  // Handle variant switch with synchronized EMI plan reset
+  const handleSelectVariant = useCallback((newVariant: ProductVariant) => {
+    setSelectedVariant(newVariant);
+    // CRITICAL: Always reset the EMI selection to the new variant's default plan
+    const newDefaultPlan = getDefaultEmiPlan(newVariant.emiPlans);
+    setSelectedEmiPlan(newDefaultPlan);
+  }, []);
+
+  // Derived calculations from currently active variant
+  const activeVariant = selectedVariant || (product ? getRepresentativeVariant(product) : undefined);
+  const startingEMI = getStartingEMI(activeVariant);
+  const discount = getDiscountPercentage(activeVariant?.mrp, activeVariant?.price);
+  const isAvailable = activeVariant?.inStock !== false && !!selectedEmiPlan;
 
   return (
     <ThemedView style={[styles.outerContainer, { backgroundColor: theme.background }]}>
@@ -68,7 +92,7 @@ export default function ProductDetailScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingBottom: insets.bottom + Spacing.six },
+          { paddingBottom: insets.bottom + 90 },
         ]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.responsiveWrapper}>
@@ -142,34 +166,132 @@ export default function ProductDetailScreen() {
             </View>
           ) : (
             <View>
-              {/* Product Media */}
+              {/* Product Media Viewport */}
               <ProductDetailImage
-                imageUrl={variant?.image}
+                imageUrl={activeVariant?.image}
                 discountPercentage={discount}
-                inStock={variant?.inStock}
+                inStock={activeVariant?.inStock}
               />
 
-              {/* Product Pricing & Metadata */}
+              {/* Product Pricing & Starting EMI Preview */}
               <ProductPricing
                 brand={product.brand}
                 name={product.name}
                 category={product.category}
-                price={variant?.price}
-                mrp={variant?.mrp}
+                price={activeVariant?.price}
+                mrp={activeVariant?.mrp}
                 discountPercentage={discount}
                 startingEMI={startingEMI}
                 variantCount={product.variants?.length}
               />
 
+              {/* Variant Selector */}
+              {product.variants && product.variants.length > 0 && (
+                <VariantSelector
+                  variants={product.variants}
+                  selectedVariant={activeVariant}
+                  onSelectVariant={handleSelectVariant}
+                />
+              )}
+
+              {/* Dynamic EMI Plan Selector for the Selected Variant */}
+              <EmiPlanSelector
+                emiPlans={activeVariant?.emiPlans}
+                selectedPlan={selectedEmiPlan}
+                onSelectPlan={setSelectedEmiPlan}
+              />
+
+              {/* Final Selected EMI Summary & Breakdown */}
+              <SelectedEmiSummary
+                productName={product.name}
+                variant={activeVariant}
+                selectedPlan={selectedEmiPlan}
+              />
+
               {/* Product Description */}
               <ProductDescription description={product.description} />
 
-              {/* 1Fi Trust & Assurances */}
+              {/* 1Fi Trust & Store Highlights */}
               <ProductAssurances />
             </View>
           )}
         </View>
       </ScrollView>
+
+      {/* Sticky Bottom Proceed CTA Bar */}
+      {product && !loading && !error && (
+        <View
+          style={[
+            styles.bottomStickyBar,
+            {
+              backgroundColor: theme.card,
+              borderTopColor: theme.border,
+              paddingBottom: Math.max(insets.bottom, Spacing.two),
+            },
+          ]}>
+          <View style={styles.stickyContent}>
+            {/* Quick Price/Tenure Preview */}
+            <View style={styles.ctaPricePreview}>
+              {selectedEmiPlan ? (
+                <>
+                  <ThemedText style={[styles.ctaMonthly, { color: theme.brandPurple }]}>
+                    {formatCurrency(selectedEmiPlan.monthlyPayment)}
+                    <ThemedText style={styles.ctaPerMo}>/mo</ThemedText>
+                  </ThemedText>
+                  <ThemedText style={styles.ctaTenure} themeColor="textSecondary">
+                    {selectedEmiPlan.tenure}M Plan • {selectedEmiPlan.interestRate === 0 ? '0% Int' : `${selectedEmiPlan.interestRate}%`}
+                  </ThemedText>
+                </>
+              ) : (
+                <>
+                  <ThemedText style={styles.ctaMonthly}>
+                    {activeVariant ? formatCurrency(activeVariant.price) : '—'}
+                  </ThemedText>
+                  <ThemedText style={styles.ctaTenure} themeColor="textSecondary">
+                    One-time payment
+                  </ThemedText>
+                </>
+              )}
+            </View>
+
+            {/* Proceed CTA Button */}
+            <Pressable
+              disabled={!isAvailable}
+              onPress={() => setIsConfirmModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                selectedEmiPlan
+                  ? `Proceed with ${selectedEmiPlan.tenure} month EMI plan at ${formatCurrency(selectedEmiPlan.monthlyPayment)} per month`
+                  : 'Proceed with this plan'
+              }
+              accessibilityState={{ disabled: !isAvailable }}
+              style={({ pressed }) => [
+                styles.proceedButton,
+                { backgroundColor: isAvailable ? theme.brandPurple : '#9CA3AF' },
+                pressed && isAvailable && styles.pressed,
+              ]}>
+              <ThemedText style={styles.proceedButtonText}>
+                {selectedEmiPlan ? 'Proceed with this plan →' : 'Select Plan to Proceed'}
+              </ThemedText>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
+      {/* Plan Confirmation Modal */}
+      {product && (
+        <PlanConfirmationModal
+          visible={isConfirmModalVisible}
+          onClose={() => setIsConfirmModalVisible(false)}
+          productName={product.name}
+          variant={activeVariant}
+          selectedPlan={selectedEmiPlan}
+          onContinueShopping={() => {
+            setIsConfirmModalVisible(false);
+            router.back();
+          }}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -261,4 +383,60 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.8,
   },
+  bottomStickyBar: {
+    borderTopWidth: 1,
+    paddingTop: Spacing.three,
+    paddingHorizontal: Spacing.four,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  stickyContent: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+  },
+  ctaPricePreview: {
+    flex: 1,
+    gap: 1,
+  },
+  ctaMonthly: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  ctaPerMo: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  ctaTenure: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  proceedButton: {
+    flex: 1.4,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#6226E3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  proceedButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
 });
+

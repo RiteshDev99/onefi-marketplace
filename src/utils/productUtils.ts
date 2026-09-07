@@ -42,3 +42,31 @@ export function formatCurrency(amount: number): string {
   if (typeof amount !== 'number' || isNaN(amount)) return '₹0';
   return `₹${amount.toLocaleString('en-IN')}`;
 }
+
+/**
+ * Returns a new array of EMI plans sorted in ascending order of tenure (e.g. 3m, 6m, 9m, 12m, 24m...).
+ */
+export function sortEmiPlansByTenure(emiPlans?: import('@/types/product').EMIPlan[]): import('@/types/product').EMIPlan[] {
+  if (!emiPlans || emiPlans.length === 0) return [];
+  return [...emiPlans].sort((a, b) => a.tenure - b.tenure);
+}
+
+/**
+ * Deterministically finds the default EMI plan for a variant.
+ * Pre-selects the plan with the lowest monthly payment (with shorter tenure as tie-breaker).
+ */
+export function getDefaultEmiPlan(emiPlans?: import('@/types/product').EMIPlan[]): import('@/types/product').EMIPlan | undefined {
+  if (!emiPlans || emiPlans.length === 0) return undefined;
+  const sorted = sortEmiPlansByTenure(emiPlans);
+  if (sorted.length === 0) return undefined;
+
+  let lowestPlan = sorted[0];
+  for (const plan of sorted) {
+    if (plan.monthlyPayment < lowestPlan.monthlyPayment) {
+      lowestPlan = plan;
+    } else if (plan.monthlyPayment === lowestPlan.monthlyPayment && plan.tenure < lowestPlan.tenure) {
+      lowestPlan = plan;
+    }
+  }
+  return lowestPlan;
+}

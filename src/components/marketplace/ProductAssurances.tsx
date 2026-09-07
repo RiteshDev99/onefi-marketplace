@@ -7,24 +7,24 @@ import { useTheme } from '@/hooks/use-theme';
 
 const ASSURANCES = [
   {
-    icon: '🚀',
-    title: 'Express Insured Delivery',
-    subtitle: 'Free & insured shipping directly from manufacturer',
+    icon: '📦',
+    title: 'Brand Sealed Packaging',
+    subtitle: 'Original manufacturer sealed unit with standard brand warranty',
   },
   {
-    icon: '🛡️',
-    title: '1-Year Official Warranty',
-    subtitle: '100% authentic brand sealed product with pan-India warranty',
+    icon: '📋',
+    title: 'Transparent EMI Terms',
+    subtitle: 'Itemized monthly breakdown with clear interest and cashback terms',
   },
   {
-    icon: '📄',
-    title: 'Instant Paperless KYC',
-    subtitle: 'Zero documentation required • Backed by mutual funds',
+    icon: '⚡',
+    title: 'Digital Onboarding',
+    subtitle: 'Paperless financing workflow backed by your mutual fund portfolio',
   },
   {
-    icon: '🔒',
-    title: 'Bank-Grade Security',
-    subtitle: '256-bit encrypted transactions & zero hidden fees',
+    icon: '🚚',
+    title: 'Tracked Delivery',
+    subtitle: 'Fast dispatch directly from authorized partner merchants',
   },
 ];
 
@@ -40,7 +40,7 @@ export function ProductAssurances() {
           borderColor: theme.border,
         },
       ]}>
-      <ThemedText style={styles.sectionTitle}>1Fi Trust & Assurances</ThemedText>
+      <ThemedText style={styles.sectionTitle}>1Fi Store Highlights</ThemedText>
 
       <View style={styles.grid}>
         {ASSURANCES.map((item, index) => (

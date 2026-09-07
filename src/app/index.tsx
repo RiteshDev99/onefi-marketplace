@@ -9,6 +9,7 @@ import { ShopSearchBar } from '@/components/shop/ShopSearchBar';
 import { MarketplaceShell } from '@/components/shop/MarketplaceShell';
 import { TopBrandsPlaceholder } from '@/components/shop/TopBrandsPlaceholder';
 import { NearbyStoresPlaceholder } from '@/components/shop/NearbyStoresPlaceholder';
+import { BottomNavBar } from '@/components/shop/BottomNavBar';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { ShopCategoryTabKey } from '@/types/shop';
@@ -39,7 +40,7 @@ export default function ShopScreen() {
           styles.contentContainer,
           {
             paddingTop: safeAreaInsets.top,
-            paddingBottom: safeAreaInsets.bottom + BottomTabInset + Spacing.four,
+            paddingBottom: safeAreaInsets.bottom + BottomTabInset + Spacing.six,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -69,6 +70,9 @@ export default function ShopScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* 1Fi Bottom Navigation Bar */}
+      <BottomNavBar />
     </ThemedView>
   );
 }
