@@ -1,180 +1,335 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SymbolView, SymbolViewProps } from 'expo-symbols';
 
-import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Spacing, MaxContentWidth } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export default function TabTwoScreen() {
+type IconName = SymbolViewProps['name'];
+
+interface MenuItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: IconName;
+  badge?: string;
+}
+
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
+export default function ProfileScreen() {
+  const router = useRouter();
   const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
   const theme = useTheme();
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
+  const menuSections: MenuSection[] = [
+    {
+      title: 'Account',
+      items: [
+        {
+          id: 'personal',
+          title: 'Personal Details',
+          subtitle: 'Name, email, mobile number',
+          icon: 'person',
+        },
+        {
+          id: 'kyc',
+          title: 'KYC & Verification',
+          subtitle: 'Identity and address proof',
+          icon: 'checkmark.shield',
+          badge: 'Verified',
+        },
+      ],
     },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
+    {
+      title: 'Finances',
+      items: [
+        {
+          id: 'portfolio',
+          title: 'Portfolio & Limits',
+          subtitle: 'Linked Mutual Funds, available credit',
+          icon: 'chart.pie',
+        },
+        {
+          id: 'emi',
+          title: 'EMI Plans & Dues',
+          subtitle: 'Active repayment schedules',
+          icon: 'indianrupeesign.square',
+        },
+      ],
     },
-  });
+    {
+      title: 'Preferences & Support',
+      items: [
+        {
+          id: 'settings',
+          title: 'Settings & Security',
+          subtitle: 'App lock, biometric, notifications',
+          icon: 'gearshape',
+        },
+        {
+          id: 'help',
+          title: 'Help & Support',
+          subtitle: 'FAQs, contact 1Fi support',
+          icon: 'questionmark.circle',
+        },
+      ],
+    },
+  ];
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
+    <View style={[styles.screen, { backgroundColor: theme.background, paddingTop: safeAreaInsets.top }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+          <SymbolView
+            name="arrow.backward"
+            size={22}
+            tintColor={theme.text}
+          />
+        </Pressable>
+        <ThemedText style={styles.headerTitle}>Profile</ThemedText>
+        <View style={styles.headerSpacer} />
+      </View>
 
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: safeAreaInsets.bottom + Spacing.six },
+        ]}
+        showsVerticalScrollIndicator={false}>
+        <View style={styles.container}>
+          {/* User Profile Card */}
+          <View style={[styles.profileCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.avatar, { backgroundColor: theme.brandPurple }]}>
+              <SymbolView
+                name="person.fill"
+                size={28}
+                tintColor="#FFFFFF"
               />
-            </ThemedView>
-          </Collapsible>
+            </View>
+            <View style={styles.profileInfo}>
+              <ThemedText style={styles.userName}>1Fi Member</ThemedText>
+              <ThemedText style={styles.userSubtitle}>Demo Account • View Only</ThemedText>
+            </View>
+          </View>
 
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
+          {/* Menu Sections */}
+          {menuSections.map((section) => (
+            <View key={section.title} style={styles.sectionWrapper}>
+              <ThemedText style={styles.sectionHeader}>{section.title}</ThemedText>
+              <View style={[styles.sectionCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                {section.items.map((item, index) => {
+                  const isLast = index === section.items.length - 1;
+                  return (
+                    <View key={item.id}>
+                      <Pressable
+                        style={({ pressed }) => [
+                          styles.menuItem,
+                          pressed && styles.pressedItem,
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={item.title}>
+                        <View style={[styles.menuIconBox, { backgroundColor: theme.brandPurpleLight }]}>
+                          <SymbolView
+                            name={item.icon}
+                            size={18}
+                            tintColor={theme.brandPurple}
+                          />
+                        </View>
+                        <View style={styles.menuTextGroup}>
+                          <View style={styles.menuTitleRow}>
+                            <ThemedText style={styles.menuItemTitle}>{item.title}</ThemedText>
+                            {item.badge ? (
+                              <View style={styles.verifiedBadge}>
+                                <ThemedText style={styles.verifiedBadgeText}>{item.badge}</ThemedText>
+                              </View>
+                            ) : null}
+                          </View>
+                          <ThemedText style={styles.menuItemSubtitle}>{item.subtitle}</ThemedText>
+                        </View>
+                        <SymbolView
+                          name="chevron.right"
+                          size={14}
+                          tintColor="#9CA3AF"
+                        />
+                      </Pressable>
+                      {!isLast && <View style={[styles.menuDivider, { backgroundColor: theme.border }]} />}
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ))}
 
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+          {/* App Info Footer */}
+          <View style={styles.footer}>
+            <ThemedText style={styles.footerText}>1Fi Marketplace v1.0.0</ThemedText>
+            <ThemedText style={styles.footerSubtext}>SDE Intern Assignment Demo</ThemedText>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  headerSpacer: {
+    width: 38,
+  },
+  pressed: {
+    opacity: 0.65,
+  },
   scrollView: {
     flex: 1,
   },
   contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
     alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
-  },
-  centerText: {
-    textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
-  },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
     paddingTop: Spacing.three,
   },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
+  container: {
     width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
+    maxWidth: MaxContentWidth,
+    gap: Spacing.four,
   },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.three,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 14,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  userName: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  userSubtitle: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  sectionWrapper: {
+    gap: 8,
+  },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    color: '#6B7280',
+    letterSpacing: 0.5,
+    paddingHorizontal: 4,
+  },
+  sectionCard: {
+    borderRadius: 14,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 13,
+    paddingHorizontal: Spacing.three,
+    gap: 12,
+  },
+  pressedItem: {
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  },
+  menuIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  menuTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  menuItemTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  menuItemSubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  verifiedBadge: {
+    backgroundColor: '#E8FAF2',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  verifiedBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#00A87A',
+  },
+  menuDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: 60,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.four,
+    gap: 4,
+  },
+  footerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  footerSubtext: {
+    fontSize: 11,
+    color: '#9CA3AF',
   },
 });
