@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -16,38 +16,38 @@ export function ShopCategoryTabs({ activeTab, onSelectTab }: ShopCategoryTabsPro
 
   return (
     <View style={styles.outerContainer}>
-      <View style={[styles.tabTrack, { backgroundColor: theme.brandPurpleLight, borderColor: theme.border }]}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}>
-          {SHOP_CATEGORY_TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
+      <View style={[styles.tabTrack, { backgroundColor: '#F1F3F9', borderColor: '#E2E8F0' }]}>
+        {SHOP_CATEGORY_TABS.map((tab) => {
+          const isActive = activeTab === tab.key;
 
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => onSelectTab(tab.key)}
-                style={({ pressed }) => [
-                  styles.tabButton,
-                  isActive && styles.activeTabButton,
-                  pressed && styles.pressed,
+          return (
+            <Pressable
+              key={tab.key}
+              onPress={() => onSelectTab(tab.key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={tab.label}
+              style={({ pressed }) => [
+                styles.tabButton,
+                isActive && styles.activeTabButton,
+                pressed && styles.pressed,
+              ]}>
+              <ThemedText
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={[
+                  styles.tabLabel,
+                  isActive ? styles.activeTabLabel : styles.inactiveTabLabel,
                 ]}>
-                <ThemedText
-                  style={[
-                    styles.tabLabel,
-                    isActive ? [styles.activeTabLabel, { color: theme.brandPurple }] : styles.inactiveTabLabel,
-                  ]}>
-                  {tab.label}
-                </ThemedText>
+                {tab.label}
+              </ThemedText>
 
-                {isActive && (
-                  <View style={[styles.activeIndicator, { backgroundColor: theme.brandPurple }]} />
-                )}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+              {isActive && (
+                <View style={[styles.activeIndicator, { backgroundColor: theme.brandPurple }]} />
+              )}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -55,61 +55,61 @@ export function ShopCategoryTabs({ activeTab, onSelectTab }: ShopCategoryTabsPro
 
 const styles = StyleSheet.create({
   outerContainer: {
-    paddingHorizontal: Spacing.three,
-    marginTop: -16, // Gentle overlap over the hero banner as shown in modern fintech UI
+    paddingHorizontal: Spacing.four,
+    marginTop: -14, // Clean, subtle overlap with hero banner
     zIndex: 10,
+    width: '100%',
   },
   tabTrack: {
-    borderRadius: 30,
-    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 28,
+    padding: 3,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 3,
-  },
-  scrollContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    minWidth: '100%',
-    justifyContent: 'space-around',
+    height: 48,
   },
   tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    flex: 1,
+    height: '100%',
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 44,
+    paddingHorizontal: 4,
+    position: 'relative',
   },
   activeTabButton: {
     backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
     shadowRadius: 3,
     elevation: 2,
   },
   tabLabel: {
-    fontSize: 14,
+    fontSize: 12.5,
     textAlign: 'center',
   },
   activeTabLabel: {
+    color: '#6226E3',
     fontWeight: '700',
   },
   inactiveTabLabel: {
-    color: '#686E82',
+    color: '#64748B',
     fontWeight: '600',
   },
   activeIndicator: {
-    width: 24,
-    height: 3,
+    position: 'absolute',
+    bottom: 4,
+    width: 20,
+    height: 2.5,
     borderRadius: 2,
-    marginTop: 3,
   },
   pressed: {
-    opacity: 0.75,
+    opacity: 0.8,
   },
 });
